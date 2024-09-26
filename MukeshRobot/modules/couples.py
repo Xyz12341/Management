@@ -38,6 +38,8 @@ async def couple(_, message):
     try:
         chat_id = message.chat.id
         is_selected = await get_couple(chat_id, today)
+        gif_url = "https://media.giphy.com/media/3o6Zt481isNVuQI1l6/giphy.gif"  # Replace with your desired GIF URL
+
         if not is_selected:
             list_of_users = []
             async for i in pbot.get_chat_members(message.chat.id, limit=50):
@@ -56,6 +58,9 @@ async def couple(_, message):
 
 {c1_mention} + {c2_mention} = 💗
 ɴᴇᴡ ᴄᴏᴜᴘʟᴇ ᴏғ ᴛʜᴇ ᴅᴀʏ ᴄᴀɴ ʙᴇ ᴄʜᴏsᴇɴ ᴀᴛ 12 ᴀᴍ {tomorrow}"""
+            
+            # Send the GIF before the message
+            await pbot.send_animation(message.chat.id, gif_url)
             await pbot.send_message(message.chat.id, text=couple_selection_message)
             couple = {"c1_id": c1_id, "c2_id": c2_id}
             await save_couple(chat_id, today, couple)
@@ -69,6 +74,9 @@ async def couple(_, message):
 
 {c1_name} + {c2_name} = 💗
 ɴᴇᴡ ᴄᴏᴜᴘʟᴇ ᴏғ ᴛʜᴇ ᴅᴀʏ ᴄᴀɴ ʙᴇ ᴄʜᴏsᴇɴ ᴀᴛ 12 ᴀᴍ {tomorrow}"""
+            
+            # Send the GIF before the message
+            await pbot.send_animation(message.chat.id, gif_url)
             await pbot.send_message(message.chat.id, text=couple_selection_message)
     except Exception as e:
         print(e)
