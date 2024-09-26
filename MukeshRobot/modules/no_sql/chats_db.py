@@ -2,8 +2,8 @@ from MukeshRobot import MONGO_DB_URI
 from pymongo import MongoClient
 
 myclient = MongoClient(MONGO_DB_URI)
-chat=myclient["MUK_chats"]
-chatsdb= chat["MUK_chats"]
+chat = myclient["MUK_chats"]
+chatsdb = chat["MUK_chats"]
 
 def get_served_chats() -> list:
     chats_list = []
