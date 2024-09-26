@@ -1,8 +1,11 @@
 import threading
-
 from sqlalchemy import BigInteger, Boolean, Column, UnicodeText
-
 from MukeshRobot.modules.sql import BASE, SESSION
+from pyrogram import Client, filters
+from pyrogram.enums import ChatType
+
+# Replace this with the actual GIF URL you want to use
+afk_gif_url = "https://media.giphy.com/media/VbnUQpnihPSIgIXuZv/giphy.gif"
 
 
 class AFK(BASE):
@@ -27,10 +30,12 @@ INSERTION_LOCK = threading.RLock()
 AFK_USERS = {}
 
 
+# Function to check if a user is AFK
 def is_afk(user_id):
     return user_id in AFK_USERS
 
 
+# Function to check AFK status from SQL
 def check_afk_status(user_id):
     try:
         return SESSION.query(AFK).get(user_id)
@@ -38,6 +43,7 @@ def check_afk_status(user_id):
         SESSION.close()
 
 
+# Function to set AFK status
 def set_afk(user_id, reason=""):
     with INSERTION_LOCK:
         curr = SESSION.query(AFK).get(user_id)
@@ -52,6 +58,7 @@ def set_afk(user_id, reason=""):
         SESSION.commit()
 
 
+# Function to remove AFK status
 def rm_afk(user_id):
     with INSERTION_LOCK:
         curr = SESSION.query(AFK).get(user_id)
@@ -67,6 +74,7 @@ def rm_afk(user_id):
         return False
 
 
+# Function to toggle AFK status
 def toggle_afk(user_id, reason=""):
     with INSERTION_LOCK:
         curr = SESSION.query(AFK).get(user_id)
@@ -74,12 +82,13 @@ def toggle_afk(user_id, reason=""):
             curr = AFK(user_id, reason, True)
         elif curr.is_afk:
             curr.is_afk = False
-        elif not curr.is_afk:
+        else:
             curr.is_afk = True
         SESSION.add(curr)
         SESSION.commit()
 
 
+# Load AFK users from the database
 def __load_afk_users():
     global AFK_USERS
     try:
@@ -90,3 +99,36 @@ def __load_afk_users():
 
 
 __load_afk_users()
+
+
+# AFK command handler
+@Client.on_message(filters.command("afk"))
+async def afk_command_handler(client, message):
+    user_id = message.from_user.id
+    chat_id = message.chat.id
+
+    if message.chat.type != ChatType.PRIVATE:
+        if len(message.command) > 1:
+            reason = " ".join(message.command[1:])
+        else:
+            reason = "No reason provided."
+
+        # Set AFK status and send a message with the GIF
+        set_afk(user_id, reason)
+
+        afk_message = f"**User is now AFK**\nReason: {reason}"
+        await client.send_animation(chat_id, afk_gif_url, caption=afk_message)
+    else:
+        await message.reply_text("This command can only be used in groups.")
+
+
+# Command to remove AFK
+@Client.on_message(filters.command("back"))
+async def back_command_handler(client, message):
+    user_id = message.from_user.id
+
+    # Remove AFK status
+    if rm_afk(user_id):
+        await message.reply_text("Welcome back! You're no longer AFK.")
+    else:
+        await message.reply_text("You were not AFK.")
