@@ -1,10 +1,12 @@
 from motor.motor_asyncio import AsyncIOMotorClient as MongoCli
 from pymongo import MongoClient, collection
+from pymongo.errors import PyMongoError
 from MukeshRobot.modules.no_sql.users_db import *
 from MukeshRobot.modules.no_sql.chats_db import *
 from MukeshRobot.modules.no_sql.gban_db import *
-from MukeshRobot import  MONGO_DB_URI
+from MukeshRobot import MONGO_DB_URI
 
+# Initialize MongoDB client with Motor
 mongo = MongoCli(MONGO_DB_URI)
 Mukeshdb = mongo.MUK_ROB
 
@@ -12,14 +14,13 @@ try:
     client = MongoClient(MONGO_DB_URI)
 except PyMongoError:
     exiter(1)
+
 main_db = client["MUKESH_ROBOT"]
-
-
 MukeshXdb = main_db
 
 
 def get_collection(name: str) -> collection:
-    """ɢᴇᴛ ᴛʜᴇ ᴄᴏʟʟᴇᴄᴛɪᴏɴ ғʀᴏᴍ ᴅᴀᴛᴀʙᴀsᴇ."""
+    """Get the collection from the database."""
     return MukeshXdb[name]
 
 
